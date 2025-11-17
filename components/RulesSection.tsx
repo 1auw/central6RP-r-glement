@@ -134,6 +134,7 @@ const rulesContent: Record<string, RuleSection[]> = {
 export default function RulesSection() {
   const [activeCategory, setActiveCategory] = useState('general');
   const [searchQuery, setSearchQuery] = useState('');
+  const [openSections, setOpenSections] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const handleSearch = (e: any) => {
@@ -173,84 +174,85 @@ export default function RulesSection() {
 
   const filteredContent = getFilteredContent();
 
+  // Debug
+  console.log('Active category:', activeCategory);
+  console.log('Filtered content:', filteredContent);
+  console.log('Rules content keys:', Object.keys(rulesContent));
+
+  const toggleSection = (index: number) => {
+    const newOpenSections = new Set(openSections);
+    if (newOpenSections.has(index)) {
+      newOpenSections.delete(index);
+    } else {
+      newOpenSections.add(index);
+    }
+    setOpenSections(newOpenSections);
+  };
+
   return (
-    <section id="rules" className="relative bg-dark-bg">
-      {/* Tabs Navigation - Full Width après Hero */}
-      <div className="relative w-full bg-black/90 border-b border-white/10 py-6">
-        <div className="container mx-auto px-6 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-wrap gap-3 justify-center"
-          >
-            {categories.map((category) => {
+    <section id="rules" className="relative bg-gradient-to-b from-dark-bg via-dark-lighter to-dark-bg">
+      {/* Sélecteur ORIGINAL - Style navigation verticale */}
+      <div className="relative w-full border-b border-white/10 bg-dark-card/95 backdrop-blur-md z-50">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex items-center justify-center gap-2 overflow-x-auto">
+            {categories.map((category, idx) => {
               const Icon = category.icon;
               const isActive = activeCategory === category.id;
               
               return (
-                <motion.button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`
-                    flex items-center gap-2 px-5 py-2.5 font-medium text-sm transition-all
-                    ${isActive 
-                      ? 'bg-primary text-white' 
-                      : 'bg-transparent text-gray-400 hover:text-white'
-                    }
-                  `}
-                  style={{ borderRadius: '2px' }}
-                >
-                  <Icon size={18} />
-                  <span>{category.title}</span>
-                </motion.button>
+                <div key={category.id} className="flex items-center relative z-50">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('CLIC DÉTECTÉ sur:', category.id);
+                      setActiveCategory(category.id);
+                      setOpenSections(new Set());
+                    }}
+                    className={`
+                      px-6 py-3 flex items-center gap-2 font-bold text-sm uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer
+                      ${isActive 
+                        ? 'bg-primary text-white' 
+                        : 'bg-transparent text-gray-500 hover:text-white hover:bg-white/5'
+                      }
+                    `}
+                    style={{ position: 'relative', zIndex: 100 }}
+                  >
+                    <Icon size={18} />
+                    {category.title}
+                  </button>
+                  {idx < categories.length - 1 && (
+                    <div className="w-px h-6 bg-white/10 mx-1" />
+                  )}
+                </div>
               );
             })}
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Background avec traits blancs en diagonale */}
-      <div className="absolute inset-0 opacity-10" style={{
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
         backgroundImage: `
           repeating-linear-gradient(
             45deg,
             transparent,
             transparent 50px,
-            rgba(255,255,255,0.1) 50px,
-            rgba(255,255,255,0.1) 52px
+            rgba(255,255,255,0.15) 50px,
+            rgba(255,255,255,0.15) 52px
           ),
           repeating-linear-gradient(
             -45deg,
             transparent,
             transparent 50px,
-            rgba(255,255,255,0.05) 50px,
-            rgba(255,255,255,0.05) 52px
+            rgba(255,255,255,0.08) 50px,
+            rgba(255,255,255,0.08) 52px
           )
         `
       }} />
       
-      <div className="container mx-auto max-w-7xl relative z-10 py-24 px-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-5xl md:text-6xl font-black mb-6">
-            <span className="bg-gradient-to-r from-primary-light to-primary-neon bg-clip-text text-transparent">
-              Règlement
-            </span>
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Consultez les règles essentielles pour profiter pleinement de l'expérience Central 6RP
-          </p>
-        </motion.div>
+      <div className="w-full relative z-10 py-16 px-6 max-w-[1400px] mx-auto">
 
         {/* Search Results Info */}
         {searchQuery && (
@@ -269,93 +271,105 @@ export default function RulesSection() {
           </motion.div>
         )}
 
-        {/* Rules Content */}
-        <motion.div
-          key={searchQuery ? 'search' : activeCategory}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="space-y-6"
+        {/* Accordéons simples */}
+        <motion.div 
+          key={`category-${activeCategory}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-3"
         >
           {filteredContent.length > 0 ? filteredContent.map((section, index) => {
             const Icon = section.icon;
+            const isOpen = openSections.has(index);
             
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-dark-card p-8 border-l-4 border-primary hover:border-primary transition-all relative overflow-hidden"
-                style={{ borderRadius: '2px' }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-dark-lighter/80 backdrop-blur-sm border border-white/20 overflow-hidden"
               >
-                {/* Section Title */}
-                <div className="flex items-center gap-3 mb-6 relative z-10">
-                  <div className="p-3 bg-primary/20" style={{ borderRadius: '2px' }}>
-                    <Icon size={24} className="text-primary" />
+                {/* Header cliquable */}
+                <button
+                  onClick={() => toggleSection(index)}
+                  className="w-full p-5 flex items-center justify-between hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon size={20} className="text-primary" />
+                    <span className="text-lg font-bold text-white">{section.title}</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white">{section.title}</h3>
-                </div>
+                  <svg
+                    className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-                {/* Rules List */}
-                <div className="space-y-4 mb-4 relative z-10">
-                  {section.rules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="mt-1.5 w-1.5 h-1.5 bg-primary flex-shrink-0" style={{ borderRadius: '1px' }} />
-                      <p className="text-gray-300 leading-relaxed">{rule}</p>
+                {/* Contenu */}
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="border-t border-white/10"
+                  >
+                    <div className="p-5 space-y-4 bg-dark-bg/40">
+                      {section.rules.map((rule, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <span className="text-primary font-bold">{i + 1}.</span>
+                          <p className="text-gray-300 leading-relaxed flex-1">{rule}</p>
+                        </div>
+                      ))}
+
+                      {section.alerts && section.alerts.length > 0 && (
+                        <div className="pt-4 space-y-2">
+                          {section.alerts.map((alert, i) => (
+                            <div
+                              key={i}
+                              className={`
+                                p-3 border-l-4 flex items-start gap-2
+                                ${alert.type === 'danger' ? 'bg-red-500/10 border-red-500 text-red-300' : ''}
+                                ${alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500 text-yellow-300' : ''}
+                                ${alert.type === 'info' ? 'bg-blue-500/10 border-blue-500 text-blue-300' : ''}
+                              `}
+                            >
+                              <span>⚠️</span>
+                              <p className="text-sm">{alert.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-
-                {/* Alerts */}
-                {section.alerts && (
-                  <div className="space-y-3 mt-6 relative z-10">
-                    {section.alerts.map((alert, i) => (
-                      <div
-                        key={i}
-                        className={`
-                          p-4 border-l-4 bg-black/30
-                          ${alert.type === 'danger' ? 'border-red-500' : ''}
-                          ${alert.type === 'warning' ? 'border-yellow-500' : ''}
-                          ${alert.type === 'info' ? 'border-blue-500' : ''}
-                        `}
-                        style={{ borderRadius: '2px' }}
-                      >
-                        <p className={`
-                          font-medium text-sm
-                          ${alert.type === 'danger' ? 'text-red-300' : ''}
-                          ${alert.type === 'warning' ? 'text-yellow-300' : ''}
-                          ${alert.type === 'info' ? 'text-blue-300' : ''}
-                        `}>
-                          {alert.text}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             );
           }) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">Aucune règle ne correspond à votre recherche.</p>
+            <div className="text-center py-12 bg-dark-lighter/80 border border-white/20 p-8">
+              <p className="text-gray-400">Aucune règle trouvée</p>
             </div>
           )}
         </motion.div>
 
-        {/* Bottom Note */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12 text-center"
-        >
-          <div className="glass p-6 inline-block border border-primary/30" style={{ borderRadius: '2px' }}>
-            <p className="text-gray-400">
-              <span className="text-primary font-bold">ATTENTION :</span> Le non-respect de ces règles peut entraîner des sanctions allant de l'avertissement au bannissement permanent
-            </p>
+        {/* Note sanctions */}
+        <div className="mt-8">
+          <div className="bg-dark-lighter/80 backdrop-blur-sm border border-primary/40 p-5">
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">⚠️</span>
+              <div>
+                <p className="text-gray-300">
+                  Le non-respect de ces règles peut entraîner des sanctions allant de l'avertissement au <span className="text-red-400 font-bold">bannissement permanent</span>.
+                </p>
+              </div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

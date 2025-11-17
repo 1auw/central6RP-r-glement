@@ -17,11 +17,6 @@ html {
 body {
   @apply bg-dark-bg text-white font-sans antialiased;
   overflow-x: hidden;
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="%231a5cff" opacity="0.2"/><circle cx="12" cy="12" r="4" fill="%231a5cff"/><circle cx="12" cy="12" r="2" fill="white"/></svg>') 12 12, auto;
-}
-
-a, button, input, select, textarea {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="%231a5cff" opacity="0.3"/><circle cx="12" cy="12" r="6" fill="%231a5cff"/><circle cx="12" cy="12" r="3" fill="white"/></svg>') 12 12, pointer;
 }
 
 /* Scrollbar personnalisé */

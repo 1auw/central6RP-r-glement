@@ -21,27 +21,18 @@ export default function ContactPage() {
           className="text-center space-y-8"
         >
           {/* Retour */}
-          <Link href="/">
-            <motion.button
-              whileHover={{ scale: 1.05, x: -5 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+          <motion.div
+            whileHover={{ scale: 1.05, x: -5 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-block"
+          >
+            <Link 
+              href="/" 
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
               <ArrowLeft size={20} />
               Retour à l'accueil
-            </motion.button>
-          </Link>
-
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-block"
-          >
-            <div className="glass px-6 py-2 border-2 border-primary/50" style={{ borderRadius: '4px' }}>
-              <span className="text-primary-neon font-semibold">Contactez-nous</span>
-            </div>
+            </Link>
           </motion.div>
 
           {/* Titre */}
