@@ -1,169 +1,152 @@
-# 🎮 Central 6RP - Site Officiel
+# 🎮 Central 6RP - Site Web
 
-Site web moderne et animé pour le serveur FiveM RolePlay **Central 6RP**.
-
----
-
-## 🚀 PREMIÈRE FOIS ICI ?
-
-👉 **Lisez [START_HERE.md](./START_HERE.md)** pour commencer !
-
----
-
-## 🚀 Technologies
-
-- **Next.js 14** (App Router)
-- **TailwindCSS** - Design system moderne
-- **Framer Motion** - Animations fluides
-- **TypeScript** - Type safety
-- **Lucide React** - Icônes modernes
+Site web moderne pour le serveur FiveM Central 6RP, construit avec Next.js 14, TailwindCSS et Framer Motion.
 
 ## ✨ Fonctionnalités
 
-- 🎥 **Vidéo background** avec effet parallax
-- 🎨 **Design sombre et moderne** avec glassmorphism
-- ⚡ **Animations fluides** avec Framer Motion
-- 📱 **Responsive** - Compatible mobile, tablette et desktop
-- 🎯 **Accordéons animés** pour le règlement
-- 🔵 **Thème bleu néon** personnalisé
-- 🎭 **Navigation smooth** entre les sections
+- 🏠 **Page d'accueil** avec vidéo en arrière-plan et animations
+- 📋 **Règlement** interactif avec recherche et catégories
+- 👤 **Système d'authentification** complet (inscription, connexion, profil)
+- 🛡️ **Panel d'administration** (gestion utilisateurs, logs, stats, paramètres)
+- 📊 **Statistiques en temps réel** depuis le serveur FiveM
+- 🔐 **Sécurité renforcée** (rate limiting, protection XSS/CSRF/SQL injection)
+- 📱 **Design responsive** et moderne
 
-## 📦 Installation rapide
+## 🚀 Démarrage rapide
 
-### 1. Installer les dépendances
+### Prérequis
 
+- Node.js 18+ 
+- npm ou yarn
+- PHP 8.0+ avec MySQL (pour le backend)
+- XAMPP ou serveur web local
+
+### Installation
+
+1. **Cloner le repository**
+```bash
+git clone https://github.com/votre-username/central6.git
+cd central6
+```
+
+2. **Installer les dépendances**
 ```bash
 npm install
 ```
 
-### 2. Personnaliser votre configuration
-
-**Fichier : `config/site.ts`**
-
-```typescript
-export const siteConfig = {
-  links: {
-    discord: "https://discord.gg/central6rp",  // ⚠️ Remplacez par votre lien
-    fivem: "fivem://connect/central6rp.fr",    // ⚠️ Remplacez par votre IP
-  },
-};
+3. **Configurer les variables d'environnement**
+```bash
+cp .env.example .env.local
 ```
 
-### 3. Ajouter votre vidéo
+Éditez `.env.local` et configurez :
+```env
+NEXT_PUBLIC_API_URL=http://localhost/central6/api
+NEXT_PUBLIC_SITE_URL=http://localhost:3001
+```
 
-Placez votre vidéo FiveM dans `/public/videos/hero-bg.mp4`
+4. **Configurer le backend PHP**
 
-> **Recommandations** : MP4, 1920x1080, 10-20 secondes, max 10 MB
+- Copiez le dossier `api/` vers votre serveur web (XAMPP, etc.)
+- Configurez la base de données MySQL (voir `api/database.sql`)
+- Modifiez `api/config.php` avec vos identifiants MySQL
+- Configurez `api/fivem_config.php` avec l'IP et le port de votre serveur FiveM
 
----
-
-## 📚 Documentation complète
-
-- 📖 **[GUIDE.md](./GUIDE.md)** - Guide de démarrage rapide
-- 🎨 **[PERSONNALISATION.md](./PERSONNALISATION.md)** - Guide de personnalisation détaillé
-- 💡 Lisez ces guides avant de déployer !
-
-## 🎬 Lancement
-
-### Mode développement :
-
+5. **Lancer le serveur de développement**
 ```bash
 npm run dev
 ```
 
-Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
+Ouvrez [http://localhost:3001](http://localhost:3001)
 
-### Build production :
+## 📁 Structure du projet
 
+```
+central6/
+├── app/                    # Pages Next.js (App Router)
+│   ├── admin/             # Pages d'administration
+│   ├── api/               # Routes API Next.js
+│   ├── login/             # Page de connexion
+│   ├── register/          # Page d'inscription
+│   └── profile/           # Page de profil
+├── components/            # Composants React réutilisables
+├── api/                   # Backend PHP (à héberger séparément)
+│   ├── auth/             # Authentification
+│   ├── admin/            # API admin
+│   └── config.php        # Configuration
+├── config/               # Configuration du site
+└── public/               # Fichiers statiques
+```
+
+## 🌐 Déploiement
+
+### Déploiement sur Vercel
+
+1. **Pousser le code sur GitHub**
 ```bash
-npm run build
-npm start
+git add .
+git commit -m "Initial commit"
+git push origin main
 ```
 
-## 🌐 Déploiement sur Vercel
+2. **Connecter à Vercel**
+   - Allez sur [vercel.com](https://vercel.com)
+   - Importez votre repository GitHub
+   - Configurez les variables d'environnement :
+     - `NEXT_PUBLIC_API_URL` : URL de votre backend PHP
+     - `NEXT_PUBLIC_SITE_URL` : URL de votre site Vercel
 
-1. **Push votre code sur GitHub**
+3. **Déployer**
+   - Vercel déploiera automatiquement à chaque push sur GitHub
 
-2. **Connectez-vous sur [Vercel](https://vercel.com)**
+### Hébergement du backend PHP
 
-3. **Importez votre repository**
+Le backend PHP doit être hébergé séparément (VPS, hébergeur PHP, etc.) :
 
-4. **Déployez** (Vercel détecte automatiquement Next.js)
+- **Option 1** : VPS avec Apache/Nginx + PHP + MySQL
+- **Option 2** : Hébergeur PHP classique (OVH, Hostinger, etc.)
+- **Option 3** : Serveur dédié
 
-Votre site sera en ligne en quelques secondes ! ⚡
+Voir `DEPLOIEMENT.md` pour plus de détails.
 
-## 📂 Structure du projet
+## 🔧 Configuration
 
-```
-central6rp/
-├── app/
-│   ├── layout.tsx          # Layout principal
-│   ├── page.tsx            # Page d'accueil
-│   ├── globals.css         # Styles globaux
-│   └── contact/
-│       └── page.tsx        # Page contact
-├── components/
-│   ├── Navbar.tsx          # Navigation avec glassmorphism
-│   ├── Hero.tsx            # Hero avec vidéo + parallax
-│   └── RulesSection.tsx    # Section règlement avec accordéons
-├── public/
-│   └── videos/
-│       └── hero-bg.mp4     # 🎥 AJOUTEZ VOTRE VIDÉO ICI
-├── tailwind.config.ts      # Configuration Tailwind
-├── next.config.mjs         # Configuration Next.js
-└── package.json
-```
+### Variables d'environnement
 
-## 🎨 Personnalisation
+| Variable | Description | Exemple |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | URL du backend PHP | `https://api.votresite.com` |
+| `NEXT_PUBLIC_SITE_URL` | URL du site | `https://votresite.com` |
 
-### Couleurs
+### Configuration FiveM
 
-Les couleurs sont définies dans `tailwind.config.ts` :
-
-```typescript
-primary: '#2a7cff',        // Bleu principal
-primary-light: '#5ea3ff',  // Bleu clair
-primary-neon: '#00d4ff',   // Cyan néon
+Éditez `api/fivem_config.php` :
+```php
+define('FIVEM_IP', '127.0.0.1');
+define('FIVEM_PORT', '30120');
 ```
 
-### Règlement
+## 📚 Documentation
 
-Modifiez le contenu dans `components/RulesSection.tsx` (variable `rules`)
+- [INSTALLATION.md](INSTALLATION.md) - Guide d'installation complet
+- [DEPLOIEMENT.md](DEPLOIEMENT.md) - Guide de déploiement
+- [SECURITE.md](SECURITE.md) - Documentation de sécurité
+- [api/CONFIG_FIVEM.md](api/CONFIG_FIVEM.md) - Configuration FiveM
 
-### Polices
+## 🛠️ Technologies utilisées
 
-Police actuelle : **Poppins** (Google Fonts)
+- **Frontend** : Next.js 14, React, TypeScript, TailwindCSS, Framer Motion
+- **Backend** : PHP 8.0+, MySQL
+- **Sécurité** : Rate limiting, CSRF protection, XSS protection, SQL injection protection
 
-Pour changer : modifiez l'import dans `app/globals.css`
+## 📝 Licence
 
-## 📝 Pages
+Ce projet est privé et propriétaire de Central 6RP.
 
-- **/** - Accueil avec hero animé + règlement en accordéons
-- **/contact** - Page de contact avec bouton Discord
+## 👥 Contribution
 
-## 🎯 Checklist de déploiement
-
-- [ ] Modifier `config/site.ts` avec vos liens Discord et FiveM
-- [ ] Ajouter votre vidéo dans `/public/videos/hero-bg.mp4`
-- [ ] Personnaliser le règlement dans `components/RulesSection.tsx`
-- [ ] Tester sur mobile et desktop
-- [ ] Build de production sans erreur (`npm run build`)
-- [ ] Déployer sur Vercel
-
-## 💡 Ressources utiles
-
-- 🎥 [Comment optimiser votre vidéo](./GUIDE.md#-où-trouver-une-bonne-vidéo)
-- 🎨 [Changer les couleurs du site](./PERSONNALISATION.md#-4-changer-les-couleurs-du-site)
-- 📜 [Personnaliser le règlement](./PERSONNALISATION.md#-3-personnaliser-le-règlement)
-- 🚀 [Déployer sur Vercel](./GUIDE.md#-déploiement-sur-vercel-gratuit)
-
-## 🛠️ Support
-
-Des questions ? Consultez les guides :
-- **Débutant** : Lisez [GUIDE.md](./GUIDE.md)
-- **Personnalisation** : Lisez [PERSONNALISATION.md](./PERSONNALISATION.md)
+Ce projet est privé. Pour toute question, contactez l'administrateur.
 
 ---
 
-**Fait avec ❤️ pour Central 6RP**
-
+**Central 6RP** - Serveur FiveM Roleplay

@@ -11,7 +11,7 @@ export const siteConfig = {
   // Liens sociaux et connexion
   links: {
     discord: "https://discord.gg/central6rp", // ⚠️ REMPLACEZ par votre vrai lien Discord
-    fivem: "fivem://connect/central6rp.fr",   // ⚠️ REMPLACEZ par votre vraie IP FiveM
+    fivem: "fivem://connect/cfx.re/join/drvao5",
   },
   
   // Logo (navbar)

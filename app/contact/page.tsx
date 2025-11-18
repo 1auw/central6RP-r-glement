@@ -4,9 +4,11 @@ import { motion } from 'framer-motion';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { siteConfig } from '@/config/site';
+import Footer from '@/components/Footer';
 
 export default function ContactPage() {
   return (
+    <>
     <main className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-dark-bg to-primary-neon/5" />
@@ -129,6 +131,8 @@ export default function ContactPage() {
         </motion.div>
       </div>
     </main>
+    <Footer />
+    </>
   );
 }
 

@@ -1,37 +1,81 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
 /.pnp
 .pnp.js
-.yarn/install-state.gz
 
-# testing
+# Testing
 /coverage
 
-# next.js
+# Next.js
 /.next/
 /out/
 
-# production
+# Production
 /build
 
-# misc
+# Misc
 .DS_Store
 *.pem
 
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# vercel
+# Vercel
 .vercel
 
-# typescript
+# Typescript
 *.tsbuildinfo
 next-env.d.ts
 
+# ================================
+# FICHIERS SENSIBLES - NE PAS COMMIT
+# ================================
+
+# Configuration API
+api/settings.json
+api/*.log
+api/**/*.log
+
+# Fichiers temporaires de création admin (IMPORTANT!)
+api/create_admin.php
+api/promote_to_admin.php
+api/update_password.php
+api/*_temp.php
+api/*_admin_temp.php
+
+# Backups
+*.bak
+*.old
+*.tmp
+*.swp
+
+# Logs
+logs/
+*.log
+error_log
+
+# Base de données (NE JAMAIS COMMIT!)
+api/database.sql
+*.sql
+*.sqlite
+*.db
+
+# Configurations sensibles
+config.production.php
+.htpasswd
+
+# Uploads (si vous en avez)
+uploads/
+public/uploads/
+
+# Cache
+.cache/

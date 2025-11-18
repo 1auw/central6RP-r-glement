@@ -21,7 +21,7 @@ Avant de déployer votre site, voici la checklist complète :
 ```typescript
 links: {
   discord: "https://discord.gg/central6rp",  // ⚠️ CHANGEZ CECI
-  fivem: "fivem://connect/central6rp.fr",    // ⚠️ CHANGEZ CECI
+  fivem: "fivem://connect/drvao5",    // ⚠️ CHANGEZ CECI
 },
 ```
 

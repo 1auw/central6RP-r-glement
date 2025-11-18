@@ -1,0 +1,148 @@
+# ================================
+# SÉCURITÉ RENFORCÉE - CENTRAL 6RP
+# ================================
+
+RewriteEngine On
+
+# ================================
+# PROTECTION PHP
+# ================================
+
+# Désactiver l'affichage des erreurs PHP
+php_flag display_errors Off
+php_flag display_startup_errors Off
+
+# Protection contre les injections
+php_flag magic_quotes_gpc Off
+php_flag register_globals Off
+
+# Limiter la taille des uploads
+php_value upload_max_filesize 2M
+php_value post_max_size 2M
+
+# Limiter le temps d'exécution
+php_value max_execution_time 30
+
+# Sessions sécurisées
+php_flag session.auto_start Off
+php_value session.cookie_httponly 1
+php_value session.use_only_cookies 1
+
+# ================================
+# BLOCAGE FICHIERS SENSIBLES
+# ================================
+
+# Bloquer l'accès aux fichiers JSON, logs, SQL, et config
+<FilesMatch "\.(json|log|sql|bak|config|ini|md)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Autoriser uniquement README.md
+<Files "README.md">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Allow from all
+    </IfModule>
+</Files>
+
+# Bloquer l'accès aux fichiers de backup
+<FilesMatch "(^\.|\~|\.bak|\.old|\.tmp|\.swp)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ================================
+# HEADERS DE SÉCURITÉ
+# ================================
+
+# Protection XSS
+Header set X-XSS-Protection "1; mode=block"
+
+# Empêcher l'embedding dans une iframe
+Header set X-Frame-Options "DENY"
+
+# Empêcher le MIME sniffing
+Header set X-Content-Type-Options "nosniff"
+
+# Référrer Policy
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Masquer la version PHP
+Header unset X-Powered-By
+Header unset Server
+
+# Content Security Policy (adapté pour le développement)
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:3001;"
+
+# ================================
+# CORS (uniquement pour localhost)
+# ================================
+
+# Permettre les requêtes depuis Next.js
+Header set Access-Control-Allow-Origin "http://localhost:3001"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization, Cookie"
+Header set Access-Control-Allow-Credentials "true"
+
+# CORS Preflight
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# ================================
+# PROTECTION CONTRE LES ATTAQUES
+# ================================
+
+# Bloquer les requêtes avec SQL injection patterns
+RewriteCond %{QUERY_STRING} ([';]|(alter|create|drop|insert|delete|update|truncate|replace)[\s]+) [NC,OR]
+RewriteCond %{QUERY_STRING} (union[\s]+select|concat[\s]*\(|script[\s]*\>|<iframe) [NC,OR]
+RewriteCond %{QUERY_STRING} (\.\.\/|\.\.\\|\/etc\/|\/proc\/) [NC]
+RewriteRule .* - [F,L]
+
+# Bloquer les user agents suspects
+RewriteCond %{HTTP_USER_AGENT} (libwww|wget|python|nikto|scan|java|winhttp|clshttp|loader|curl) [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} (;|<|>|'|%0A|%0D|%27|%3C|%3E|%00) [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+RewriteCond %{HTTP_USER_AGENT} ^(-|)$
+RewriteRule .* - [F,L]
+
+# Bloquer les méthodes HTTP non autorisées
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|PUT|DELETE) [NC]
+RewriteRule .* - [F,L]
+
+# Bloquer l'accès aux répertoires sensibles
+RewriteRule ^(\.git|\.htaccess|\.htpasswd) - [F,L]
+
+# ================================
+# PROTECTION BRUTE FORCE
+# ================================
+
+# Limiter le nombre de requêtes par seconde (si mod_ratelimit disponible)
+<IfModule mod_ratelimit.c>
+    SetOutputFilter RATE_LIMIT
+    SetEnv rate-limit 400
+</IfModule>
+
+# ================================
+# CACHE CONTROL
+# ================================
+
+# Désactiver le cache pour les fichiers API
+<FilesMatch "\.(php)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</FilesMatch>

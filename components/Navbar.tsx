@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { MessageCircle, Shield, Users, Ban, Car, MessageSquare, Skull } from 'lucide-react';
+import { MessageCircle, Shield, Users, Ban, Car, MessageSquare, Skull, User } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
 // Données des règles pour la recherche
@@ -76,10 +77,14 @@ const rulesData = {
 };
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const isReglementPage = pathname === '/reglement';
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<{ category: string; categoryTitle: string; rule: string; icon: any; sectionIndex: number }>>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,6 +95,25 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Vérifier si l'utilisateur est connecté
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.success && data.user) {
+          setIsLoggedIn(true);
+          setUsername(data.user.username);
+        }
+      } catch (error) {
+        // User not logged in
+      }
+    };
+    checkAuth();
+  }, [pathname]);
 
   // Fermer le dropdown quand on clique ailleurs
   useEffect(() => {
@@ -102,13 +126,6 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const scrollToRules = () => {
-    const rulesSection = document.getElementById('rules');
-    if (rulesSection) {
-      rulesSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -143,6 +160,13 @@ export default function Navbar() {
     } else {
       setSearchResults([]);
       setShowDropdown(false);
+    }
+  };
+
+  const scrollToRules = () => {
+    const rulesSection = document.getElementById('rules-section');
+    if (rulesSection) {
+      rulesSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -198,7 +222,8 @@ export default function Navbar() {
 
         {/* Menu */}
         <div className="flex items-center gap-6">
-          {/* Barre de recherche avec dropdown */}
+          {/* Barre de recherche avec dropdown - Visible uniquement sur /reglement */}
+          {isReglementPage && (
           <div ref={searchRef} className="relative hidden md:block">
             <input
               type="text"
@@ -270,15 +295,17 @@ export default function Navbar() {
               </div>
             )}
           </div>
+          )}
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={scrollToRules}
-            className="text-gray-300 hover:text-white transition-colors font-medium"
-          >
-            Règlement
-          </motion.button>
+          <Link href="/reglement">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-gray-300 hover:text-white transition-colors font-medium"
+            >
+              Règlement
+            </motion.button>
+          </Link>
 
           <Link href="/contact">
             <motion.button
@@ -289,6 +316,42 @@ export default function Navbar() {
               Contact
             </motion.button>
           </Link>
+
+          {/* Afficher Login/Register ou Profile selon l'état de connexion */}
+          {isLoggedIn ? (
+            <Link href="/profile">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors font-medium"
+              >
+                <User size={18} />
+                {username}
+              </motion.button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-gray-300 hover:text-white transition-colors font-medium"
+                >
+                  Connexion
+                </motion.button>
+              </Link>
+              <Link href="/register">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 font-semibold transition-all border border-primary/50"
+                  style={{ borderRadius: '2px' }}
+                >
+                  S'inscrire
+                </motion.button>
+              </Link>
+            </>
+          )}
 
           <motion.a
             whileHover={{ scale: 1.05 }}
