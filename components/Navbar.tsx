@@ -79,7 +79,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [searchResults, setSearchResults] = useState<Array<{ category: string; categoryTitle: string; rule: string; icon: any }>>([]);
+  const [searchResults, setSearchResults] = useState<Array<{ category: string; categoryTitle: string; rule: string; icon: any; sectionIndex: number }>>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
