@@ -141,8 +141,35 @@ export default function RulesSection() {
       setSearchQuery(e.detail.toLowerCase());
     };
 
+    const handleCategoryChange = (e: any) => {
+      const data = e.detail;
+      
+      // Si c'est un simple string (ancien format), on le traite
+      if (typeof data === 'string') {
+        setActiveCategory(data);
+        setSearchQuery('');
+      } else {
+        // Nouveau format avec catégorie et section à ouvrir
+        setActiveCategory(data.category);
+        setSearchQuery('');
+        
+        // Ouvrir automatiquement la section spécifiée
+        if (data.openSection !== undefined) {
+          setTimeout(() => {
+            const newOpenSections = new Set<number>();
+            newOpenSections.add(data.openSection);
+            setOpenSections(newOpenSections);
+          }, 100); // Petit délai pour laisser le temps à la catégorie de changer
+        }
+      }
+    };
+
     window.addEventListener('searchRules', handleSearch);
-    return () => window.removeEventListener('searchRules', handleSearch);
+    window.addEventListener('changeCategory', handleCategoryChange);
+    return () => {
+      window.removeEventListener('searchRules', handleSearch);
+      window.removeEventListener('changeCategory', handleCategoryChange);
+    };
   }, []);
 
   // Filtrer le contenu en fonction de la recherche
@@ -232,44 +259,22 @@ export default function RulesSection() {
         </div>
       </div>
 
-      {/* Background avec traits blancs en diagonale */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
-        backgroundImage: `
-          repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 50px,
-            rgba(255,255,255,0.15) 50px,
-            rgba(255,255,255,0.15) 52px
-          ),
-          repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 50px,
-            rgba(255,255,255,0.08) 50px,
-            rgba(255,255,255,0.08) 52px
-          )
-        `
-      }} />
+      {/* Background minimaliste et élégant */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Dégradé doux du haut vers le bas */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d15] via-dark-bg to-[#0d0d15]" />
+        
+        {/* Halos lumineux très subtils */}
+        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-primary-neon/5 rounded-full blur-[140px]" />
+        
+        {/* Grain/Noise subtil pour texture */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }} />
+      </div>
       
       <div className="w-full relative z-10 py-16 px-6 max-w-[1400px] mx-auto">
-
-        {/* Search Results Info */}
-        {searchQuery && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 text-center"
-          >
-            <p className="text-gray-400">
-              {filteredContent.length > 0 ? (
-                <>Résultats pour "<span className="text-primary font-semibold">{searchQuery}</span>" : {filteredContent.length} section(s) trouvée(s)</>
-              ) : (
-                <>Aucun résultat pour "<span className="text-primary font-semibold">{searchQuery}</span>"</>
-              )}
-            </p>
-          </motion.div>
-        )}
 
         {/* Accordéons simples */}
         <motion.div 
