@@ -41,10 +41,7 @@ try {
     die(json_encode(['success' => false, 'error' => 'Erreur de connexion à la base de données']));
 }
 
-// Headers CORS et JSON
-header('Content-Type: application/json; charset=utf-8');
-
-// Configuration CORS dynamique (développement + production)
+// Configuration CORS - DOIT ÊTRE AVANT TOUT AUTRE HEADER
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
 // Autoriser localhost (développement)
@@ -59,20 +56,28 @@ elseif (preg_match('/^https?:\/\/central6rp\.rf\.gd$/', $origin)) {
 elseif (preg_match('/^https:\/\/.*\.vercel\.app$/', $origin)) {
     header("Access-Control-Allow-Origin: $origin");
 }
+// Autoriser toutes les origines si aucune ne correspond (pour le débogage)
+elseif (!empty($origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 // Par défaut, autoriser localhost en développement
 else {
     header('Access-Control-Allow-Origin: http://localhost:3001');
 }
 
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, Cookie');
 header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400'); // Cache preflight pendant 24h
 
-// Répondre aux requêtes OPTIONS (preflight)
+// Répondre aux requêtes OPTIONS (preflight) IMMÉDIATEMENT
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+// Headers JSON (seulement pour les autres requêtes)
+header('Content-Type: application/json; charset=utf-8');
 
 /**
  * Fonction pour valider et nettoyer les données
