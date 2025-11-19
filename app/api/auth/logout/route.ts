@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+
+// Forcer le rendu dynamique
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Appel au backend PHP
+    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    const cookies = request.headers.get("cookie");
+    const headers = getApiHeaders(origin);
+    if (cookies) {
+      headers["Cookie"] = cookies;
+    }
+    
     const response = await fetch(getApiUrl("auth/logout.php"), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: headers,
       credentials: "include",
     });
 

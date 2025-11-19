@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl, getApiHeaders } from "@/lib/api-config";
 
+// Forcer le rendu dynamique car on utilise request.headers
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

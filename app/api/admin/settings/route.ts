@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+
+// Forcer le rendu dynamique
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const cookies = request.headers.get("cookie");
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    const headers = getApiHeaders(origin);
+    if (cookies) {
+      headers["Cookie"] = cookies;
+    }
 
     const response = await fetch(getApiUrl("admin/settings.php"), {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Cookie": cookies || "",
-      },
+      headers: headers,
     });
 
     const textResponse = await response.text();
@@ -38,13 +43,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const cookies = request.headers.get("cookie");
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    const headers = getApiHeaders(origin);
+    if (cookies) {
+      headers["Cookie"] = cookies;
+    }
 
     const response = await fetch(getApiUrl("admin/settings.php"), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cookie": cookies || "",
-      },
+      headers: headers,
       body: JSON.stringify(body),
     });
 
