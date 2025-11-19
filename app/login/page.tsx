@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api-config";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,9 +22,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      // Appel direct au backend PHP depuis le navigateur pour éviter la protection InfinityFree
+      const res = await fetch(getApiUrl("auth/login.php"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           login: formData.email,
           password: formData.password,
@@ -31,7 +35,17 @@ export default function LoginPage() {
         credentials: "include",
       });
 
-      const data = await res.json();
+      const textResponse = await res.text();
+      let data;
+      
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        // Si ce n'est pas du JSON, c'est probablement la protection InfinityFree
+        console.error("Réponse non-JSON:", textResponse);
+        setError("Erreur de connexion au serveur. Veuillez réessayer.");
+        return;
+      }
 
       if (data.success) {
         router.push("/profile");

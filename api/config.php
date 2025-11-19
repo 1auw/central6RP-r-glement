@@ -45,18 +45,22 @@ try {
 header('Content-Type: application/json; charset=utf-8');
 
 // Configuration CORS dynamique (développement + production)
-$allowed_origins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://central6rp.rf.gd',  // Votre domaine InfinityFree
-    // Ajoutez votre URL Vercel ici après déploiement : 'https://votresite.vercel.app'
-];
-
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, $allowed_origins)) {
+
+// Autoriser localhost (développement)
+if (preg_match('/^https?:\/\/localhost(:\d+)?$/', $origin)) {
     header("Access-Control-Allow-Origin: $origin");
-} else {
-    // En développement, autoriser localhost par défaut
+}
+// Autoriser votre domaine InfinityFree
+elseif (preg_match('/^https?:\/\/central6rp\.rf\.gd$/', $origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+// Autoriser toutes les URLs Vercel (production)
+elseif (preg_match('/^https:\/\/.*\.vercel\.app$/', $origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+// Par défaut, autoriser localhost en développement
+else {
     header('Access-Control-Allow-Origin: http://localhost:3001');
 }
 

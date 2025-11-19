@@ -42,8 +42,8 @@
     SetEnvIf Origin "^http(s)?://localhost(:[0-9]+)?$" CORS=1
     # Autoriser depuis votre domaine InfinityFree
     SetEnvIf Origin "^https?://central6rp\.rf\.gd$" CORS=1
-    # Autoriser depuis Vercel (à ajouter après déploiement)
-    # SetEnvIf Origin "^https://central6rp.vercel.app/$" CORS=1
+    # Autoriser toutes les URLs Vercel (production)
+    SetEnvIf Origin "^https://.*\.vercel\.app$" CORS=1
     
     Header set Access-Control-Allow-Origin "%{CORS}e" env=CORS
     Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
