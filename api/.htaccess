@@ -89,14 +89,11 @@ Header unset Server
 Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:3001;"
 
 # ================================
-# CORS (uniquement pour localhost)
+# CORS (géré dynamiquement dans config.php)
 # ================================
 
-# Permettre les requêtes depuis Next.js
-Header set Access-Control-Allow-Origin "http://localhost:3001"
-Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header set Access-Control-Allow-Headers "Content-Type, Authorization, Cookie"
-Header set Access-Control-Allow-Credentials "true"
+# Le CORS est géré dans config.php pour plus de flexibilité
+# Cela permet d'autoriser localhost (dev) et Vercel (prod) automatiquement
 
 # CORS Preflight
 RewriteCond %{REQUEST_METHOD} OPTIONS

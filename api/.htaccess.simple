@@ -1,0 +1,69 @@
+# ================================
+# .htaccess pour Central6RP - InfinityFree
+# Version simplifiée qui fonctionne
+# ================================
+
+# Autoriser l'accès aux fichiers PHP
+<FilesMatch "\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+
+# Bloquer les fichiers sensibles (logs, SQL, backups, docs)
+<FilesMatch "\.(log|sql|bak|md|json|ini)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Bloquer l'accès aux fichiers de configuration sensibles
+<FilesMatch "(^\.htaccess|^\.htpasswd|^config\.php|^database\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# CORS - Autoriser les requêtes depuis votre site et Vercel
+<IfModule mod_headers.c>
+    # Autoriser depuis localhost (développement)
+    SetEnvIf Origin "^http(s)?://localhost(:[0-9]+)?$" CORS=1
+    # Autoriser depuis votre domaine InfinityFree
+    SetEnvIf Origin "^https?://central6rp\.rf\.gd$" CORS=1
+    # Autoriser depuis Vercel (à ajouter après déploiement)
+    # SetEnvIf Origin "^https://central6rp.vercel.app/$" CORS=1
+    
+    Header set Access-Control-Allow-Origin "%{CORS}e" env=CORS
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, Cookie"
+    Header set Access-Control-Allow-Credentials "true"
+    
+    # Headers de sécurité
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# CORS Preflight (répondre aux requêtes OPTIONS)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
+
+# Désactiver l'affichage des erreurs PHP en production
+php_flag display_errors Off
+php_flag display_startup_errors Off
+

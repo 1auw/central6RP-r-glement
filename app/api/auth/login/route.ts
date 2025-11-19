@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl, getApiHeaders } from "@/lib/api-config";
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,13 +7,13 @@ export async function POST(request: NextRequest) {
 
     console.log("🔐 Tentative de connexion:", { email: body.email });
 
-    // Appel au backend PHP
+    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
     const response = await fetch(getApiUrl("auth/login.php"), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getApiHeaders(origin),
       body: JSON.stringify(body),
+      credentials: "include",
     });
 
     console.log("📥 Statut réponse PHP:", response.status);

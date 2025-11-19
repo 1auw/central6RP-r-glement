@@ -12,11 +12,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Configuration de la base de données
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'central6rp');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// Configuration de la base de données InfinityFree
+// ⚠️ IMPORTANT : Remplissez les valeurs ci-dessous avec vos informations InfinityFree
+define('DB_HOST', 'sql213.infinityfree.com');  // Hostname MySQL (visible dans le panneau InfinityFree)
+define('DB_NAME', 'if0_40451098_central6rp');  // Nom complet de votre BDD (préfixe + nom que vous avez choisi)
+define('DB_USER', 'if0_40451098');              // Username MySQL (visible dans le panneau InfinityFree)
+define('DB_PASS', 'raGnjNeov1');  // Mot de passe MySQL
 define('DB_CHARSET', 'utf8mb4');
 
 // Configuration de sécurité
@@ -42,7 +43,23 @@ try {
 
 // Headers CORS et JSON
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://localhost:3001');
+
+// Configuration CORS dynamique (développement + production)
+$allowed_origins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://central6rp.rf.gd',  // Votre domaine InfinityFree
+    // Ajoutez votre URL Vercel ici après déploiement : 'https://votresite.vercel.app'
+];
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else {
+    // En développement, autoriser localhost par défaut
+    header('Access-Control-Allow-Origin: http://localhost:3001');
+}
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Access-Control-Allow-Credentials: true');
