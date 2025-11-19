@@ -22,8 +22,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const apiUrl = getApiUrl("auth/login.php");
+      console.log("🔗 URL appelée:", apiUrl);
+      
       // Appel direct au backend PHP depuis le navigateur pour éviter la protection InfinityFree
-      const res = await fetch(getApiUrl("auth/login.php"), {
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -35,15 +38,29 @@ export default function LoginPage() {
         credentials: "include",
       });
 
+      console.log("📥 Statut réponse:", res.status, res.statusText);
       const textResponse = await res.text();
+      console.log("📥 Réponse brute:", textResponse.substring(0, 500));
+      
       let data;
       
       try {
         data = JSON.parse(textResponse);
+        console.log("✅ Données parsées:", data);
       } catch (e) {
         // Si ce n'est pas du JSON, c'est probablement la protection InfinityFree
-        console.error("Réponse non-JSON:", textResponse);
-        setError("Erreur de connexion au serveur. Veuillez réessayer.");
+        console.error("❌ Erreur parsing JSON:", e);
+        console.error("❌ Réponse complète:", textResponse);
+        
+        if (textResponse.includes("aes.js") || textResponse.includes("location.href")) {
+          setError("Le serveur bloque la requête. Vérifiez la configuration CORS sur InfinityFree.");
+        } else if (textResponse.includes("404")) {
+          setError("Fichier non trouvé. Vérifiez que les fichiers PHP sont bien uploadés sur InfinityFree.");
+        } else if (textResponse.includes("403")) {
+          setError("Accès refusé. Vérifiez les permissions des fichiers sur InfinityFree.");
+        } else {
+          setError(`Erreur serveur: ${textResponse.substring(0, 200)}`);
+        }
         return;
       }
 
