@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getApiUrl } from '@/lib/api-config';
+import { getApiUrl, getApiHeaders } from '@/lib/api-config';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
+    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
     const response = await fetch(getApiUrl('stats.php'), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getApiHeaders(),
       cache: 'no-store',
     });
 
@@ -21,13 +19,32 @@ export async function GET(request: NextRequest) {
 
     const textResponse = await response.text();
     
+    // Vérifier si InfinityFree a bloqué la requête
+    if (textResponse.includes("aes.js") || textResponse.includes("<html>") || textResponse.includes("<script")) {
+      console.error('❌ InfinityFree bloque la requête stats');
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Erreur serveur',
+          stats: {
+            players_online: 0,
+            max_players: 32,
+            total_users: 0,
+            server_status: 'Hors ligne',
+            shop_items: 5
+          }
+        },
+        { status: 500 }
+      );
+    }
+    
     let data;
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
-      console.error('❌ Erreur parsing JSON stats:', textResponse);
+      console.error('❌ Erreur parsing JSON stats:', textResponse.substring(0, 200));
       return NextResponse.json(
-        { success: false, error: 'Réponse invalide du serveur', raw: textResponse.substring(0, 200) },
+        { success: false, error: 'Réponse invalide du serveur' },
         { status: 500 }
       );
     }

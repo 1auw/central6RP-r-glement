@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl, getApiHeaders } from "@/lib/api-config";
 
 // Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
@@ -10,12 +10,11 @@ export async function POST(request: NextRequest) {
 
     console.log("📤 Envoi au backend PHP:", body);
 
-    // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
+    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
     const response = await fetch(getApiUrl("auth/register.php"), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getApiHeaders(origin),
       body: JSON.stringify(body),
     });
 
@@ -24,13 +23,22 @@ export async function POST(request: NextRequest) {
     const textResponse = await response.text();
     console.log("📥 Réponse PHP (texte):", textResponse);
 
+    // Vérifier si InfinityFree a bloqué la requête (retourne du HTML/JS)
+    if (textResponse.includes("aes.js") || textResponse.includes("<html>") || textResponse.includes("<script")) {
+      console.error("❌ InfinityFree bloque la requête:", textResponse.substring(0, 200));
+      return NextResponse.json(
+        { success: false, error: "Le serveur bloque la requête. Vérifiez la configuration." },
+        { status: 500 }
+      );
+    }
+
     let data;
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
-      console.error("❌ Erreur parsing JSON:", textResponse);
+      console.error("❌ Erreur parsing JSON:", textResponse.substring(0, 500));
       return NextResponse.json(
-        { success: false, error: "Réponse invalide du serveur: " + textResponse },
+        { success: false, error: "Réponse invalide du serveur" },
         { status: 500 }
       );
     }

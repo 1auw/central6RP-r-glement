@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl, getApiHeaders } from "@/lib/api-config";
 
 // Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
+    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
     const cookies = request.headers.get("cookie");
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    const headers = getApiHeaders(origin);
     if (cookies) {
       headers["Cookie"] = cookies;
     }
