@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getApiUrl, getApiHeaders } from '@/lib/api-config';
+import { getApiUrl } from '@/lib/api-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,9 +8,16 @@ export async function GET(request: NextRequest) {
     // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
     const response = await fetch(getApiUrl('stats.php'), {
       method: 'GET',
-      headers: getApiHeaders(),
-      cache: 'no-store', // Ne pas mettre en cache
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
     });
+
+    if (!response.ok) {
+      console.error('❌ Erreur HTTP stats:', response.status, response.statusText);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
 
     const textResponse = await response.text();
     
@@ -20,7 +27,7 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.error('❌ Erreur parsing JSON stats:', textResponse);
       return NextResponse.json(
-        { success: false, error: 'Réponse invalide du serveur' },
+        { success: false, error: 'Réponse invalide du serveur', raw: textResponse.substring(0, 200) },
         { status: 500 }
       );
     }
@@ -32,6 +39,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Erreur serveur',
+        message: error instanceof Error ? error.message : String(error),
         stats: {
           players_online: 0,
           max_players: 32,

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/api-config";
 
 // Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
     const cookies = request.headers.get("cookie");
-    const headers = getApiHeaders(origin);
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (cookies) {
       headers["Cookie"] = cookies;
     }
@@ -17,7 +18,6 @@ export async function POST(request: NextRequest) {
     const response = await fetch(getApiUrl("auth/logout.php"), {
       method: "POST",
       headers: headers,
-      credentials: "include",
     });
 
     const data = await response.json();

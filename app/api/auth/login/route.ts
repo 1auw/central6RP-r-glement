@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/api-config";
 
 // Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
@@ -10,13 +10,13 @@ export async function POST(request: NextRequest) {
 
     console.log("🔐 Tentative de connexion:", { email: body.email });
 
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
+    // Appel au backend PHP (côté serveur, pas de CORS nécessaire)
     const response = await fetch(getApiUrl("auth/login.php"), {
       method: "POST",
-      headers: getApiHeaders(origin),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
-      credentials: "include",
     });
 
     console.log("📥 Statut réponse PHP:", response.status);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/api-config";
 
 // Forcer le rendu dynamique
 export const dynamic = 'force-dynamic';
@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const cookies = request.headers.get("cookie");
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (cookies) {
       headers["Cookie"] = cookies;
     }

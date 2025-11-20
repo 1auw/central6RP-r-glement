@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl, getApiHeaders } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/api-config";
 
 // Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
@@ -11,10 +11,13 @@ export async function GET(request: NextRequest) {
     
     console.log("🍪 Cookies reçus de Next.js:", cookies);
 
-    // Appel au backend PHP avec les cookies et headers pour contourner la protection InfinityFree
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
-    headers["Cookie"] = cookies || "";
+    // Appel au backend PHP avec les cookies
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (cookies) {
+      headers["Cookie"] = cookies;
+    }
     
     const response = await fetch(getApiUrl("auth/me.php"), {
       method: "GET",
