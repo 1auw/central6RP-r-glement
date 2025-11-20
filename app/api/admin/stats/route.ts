@@ -7,13 +7,13 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const cookies = request.headers.get("cookie");
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    const headers = getApiHeaders();
     if (cookies) {
       headers["Cookie"] = cookies;
     }
 
-    const response = await fetch(getApiUrl("admin/stats.php"), {
+    const proxyUrl = getApiUrl("proxy.php?endpoint=admin/stats.php");
+    const response = await fetch(proxyUrl, {
       method: "GET",
       headers: headers,
     });

@@ -49,15 +49,14 @@ export async function POST(request: NextRequest) {
 
     console.log("🔐 Tentative de connexion:", { email: body.email });
 
-    // Appel au backend PHP avec headers MINIMAUX
+    // Utiliser le proxy PHP pour contourner InfinityFree
     const headers = getApiHeaders();
-    const url = getApiUrl("auth/login.php");
+    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/login.php");
     
-    console.log("🔗 URL appelée:", url);
-    console.log("📤 Headers envoyés:", headers);
+    console.log("🔗 URL proxy appelée:", proxyUrl);
     
-    // Essayer SANS retry d'abord pour voir la réponse exacte
-    const response = await fetch(url, {
+    // Appel via le proxy PHP (qui fait un curl interne, pas de blocage)
+    const response = await fetch(proxyUrl, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(body),

@@ -8,13 +8,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const cookies = request.headers.get("cookie");
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    const headers = getApiHeaders();
     if (cookies) {
       headers["Cookie"] = cookies;
     }
 
-    const response = await fetch(getApiUrl("admin/toggle_user.php"), {
+    const proxyUrl = getApiUrl("proxy.php?endpoint=admin/toggle_user.php");
+    const response = await fetch(proxyUrl, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(body),

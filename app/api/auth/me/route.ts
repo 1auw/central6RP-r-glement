@@ -9,14 +9,14 @@ export async function GET(request: NextRequest) {
     // Récupérer les cookies de la requête Next.js
     const cookies = request.headers.get("cookie");
     
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    // Utiliser le proxy PHP pour contourner InfinityFree
+    const headers = getApiHeaders();
     if (cookies) {
       headers["Cookie"] = cookies;
     }
     
-    const response = await fetch(getApiUrl("auth/me.php"), {
+    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/me.php");
+    const response = await fetch(proxyUrl, {
       method: "GET",
       headers: headers,
     });

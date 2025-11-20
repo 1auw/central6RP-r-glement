@@ -6,15 +6,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
+    // Utiliser le proxy PHP pour contourner InfinityFree
     const cookies = request.headers.get("cookie");
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    const headers = getApiHeaders();
     if (cookies) {
       headers["Cookie"] = cookies;
     }
     
-    const response = await fetch(getApiUrl("auth/logout.php"), {
+    const proxyUrl = getApiUrl("proxy.php?endpoint=auth/logout.php");
+    const response = await fetch(proxyUrl, {
       method: "POST",
       headers: headers,
     });

@@ -5,8 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
-    const response = await fetch(getApiUrl('stats.php'), {
+    // Utiliser le proxy PHP pour contourner InfinityFree
+    const proxyUrl = getApiUrl('proxy.php?endpoint=stats.php');
+    
+    const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: getApiHeaders(),
       cache: 'no-store',
