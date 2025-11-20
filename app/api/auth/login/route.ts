@@ -49,47 +49,59 @@ export async function POST(request: NextRequest) {
 
     console.log("🔐 Tentative de connexion:", { email: body.email });
 
-    // Appel au backend PHP avec headers pour contourner la protection InfinityFree
-    const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const headers = getApiHeaders(origin);
+    // Appel au backend PHP avec headers MINIMAUX
+    const headers = getApiHeaders();
+    const url = getApiUrl("auth/login.php");
     
-    const response = await fetchWithRetry(
-      getApiUrl("auth/login.php"),
-      {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-      },
-      2, // 2 retries
-      1500 // 1.5 secondes de délai
-    );
+    console.log("🔗 URL appelée:", url);
+    console.log("📤 Headers envoyés:", headers);
+    
+    // Essayer SANS retry d'abord pour voir la réponse exacte
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(body),
+    });
 
     console.log("📥 Statut réponse PHP:", response.status);
 
     const textResponse = await response.text();
-    console.log("📥 Réponse PHP (texte):", textResponse.substring(0, 300));
+    
+    // LOG COMPLET pour debug
+    console.log("📥 Statut HTTP:", response.status);
+    console.log("📥 Longueur réponse:", textResponse.length);
+    console.log("📥 Début réponse:", textResponse.substring(0, 500));
 
-    // Vérifier si InfinityFree a bloqué la requête (retourne du HTML/JS)
-    if (textResponse.includes("aes.js") || textResponse.includes("<html>") || textResponse.includes("<script")) {
-      console.error("❌ InfinityFree bloque toujours la requête après retries");
-      // Essayer de parser quand même si c'est juste un warning
-      if (textResponse.length < 5000) {
-        console.log("⚠️ Tentative de continuer malgré le blocage...");
-      } else {
-        return NextResponse.json(
-          { success: false, error: "Le serveur bloque la requête. Réessayez dans quelques instants." },
-          { status: 500 }
-        );
-      }
+    // Vérifier si InfinityFree a bloqué la requête
+    const isBlocked = textResponse.includes("aes.js") || 
+                      textResponse.includes("<html>") || 
+                      textResponse.includes("<script") ||
+                      textResponse.includes("InfinityFree") ||
+                      textResponse.trim().startsWith("<");
+
+    if (isBlocked) {
+      console.error("❌ BLOQUÉ PAR INFINITYFREE - Réponse complète:", textResponse);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Le serveur bloque la requête. Vérifiez les logs serveur pour plus de détails.",
+          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
+        },
+        { status: 500 }
+      );
     }
 
     let data;
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
-      console.error("❌ Erreur parsing JSON:", textResponse.substring(0, 500));
+      console.error("❌ Erreur parsing JSON - Réponse complète:", textResponse);
       return NextResponse.json(
-        { success: false, error: "Réponse invalide du serveur" },
+        { 
+          success: false, 
+          error: "Réponse invalide du serveur",
+          debug: process.env.NODE_ENV === 'development' ? textResponse.substring(0, 1000) : undefined
+        },
         { status: 500 }
       );
     }

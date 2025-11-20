@@ -25,27 +25,18 @@ export function getApiUrl(endpoint: string): string {
 }
 
 /**
- * Headers pour contourner la protection InfinityFree
- * Simule un navigateur réel pour éviter les blocages
- * IMPORTANT: On utilise le domaine InfinityFree comme Origin/Referer pour éviter le blocage
+ * Headers MINIMAUX pour contourner la protection InfinityFree
+ * On essaie avec le minimum de headers pour éviter la détection
  */
 export function getApiHeaders(origin?: string): Record<string, string> {
-  // Utiliser le domaine InfinityFree comme Origin/Referer pour éviter le blocage
-  const infinityFreeOrigin = API_URL.replace(/\/$/, '');
-  
-  // Headers ultra-réalistes pour simuler Chrome le plus récent
-  // On fait comme si la requête venait directement du domaine InfinityFree
-  return {
+  // Headers ULTRA-MINIMAUX - juste le strict minimum
+  // Certains hébergeurs bloquent les requêtes avec trop de headers
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Referer": infinityFreeOrigin + "/",
-    "Origin": infinityFreeOrigin,
-    "Connection": "keep-alive",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
   };
+  
+  // Essayer avec ou sans User-Agent selon ce qui fonctionne
+  // Pour l'instant, on le garde simple
+  return headers;
 }
 
