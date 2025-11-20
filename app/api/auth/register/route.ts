@@ -4,6 +4,45 @@ import { getApiUrl, getApiHeaders } from "@/lib/api-config";
 // Forcer le rendu dynamique car on utilise request.headers
 export const dynamic = 'force-dynamic';
 
+// Fonction helper pour faire une requête avec retry
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = 2,
+  delay = 1000
+): Promise<Response> {
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      
+      // Si InfinityFree bloque, retry avec un délai
+      if (text.includes("aes.js") || text.includes("<html>") || text.includes("<script")) {
+        if (i < maxRetries) {
+          console.log(`⚠️ Blocage détecté, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+      }
+      
+      // Retourner une réponse avec le texte
+      return new Response(text, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
+    } catch (error) {
+      if (i < maxRetries) {
+        console.log(`⚠️ Erreur, retry ${i + 1}/${maxRetries} dans ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Tous les retries ont échoué");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -12,24 +51,36 @@ export async function POST(request: NextRequest) {
 
     // Appel au backend PHP avec headers pour contourner la protection InfinityFree
     const origin = request.headers.get("origin") || request.headers.get("referer") || undefined;
-    const response = await fetch(getApiUrl("auth/register.php"), {
-      method: "POST",
-      headers: getApiHeaders(origin),
-      body: JSON.stringify(body),
-    });
+    const headers = getApiHeaders(origin);
+    
+    const response = await fetchWithRetry(
+      getApiUrl("auth/register.php"),
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+      },
+      2, // 2 retries
+      1500 // 1.5 secondes de délai
+    );
 
     console.log("📥 Statut réponse PHP:", response.status);
 
     const textResponse = await response.text();
-    console.log("📥 Réponse PHP (texte):", textResponse);
+    console.log("📥 Réponse PHP (texte):", textResponse.substring(0, 300));
 
     // Vérifier si InfinityFree a bloqué la requête (retourne du HTML/JS)
     if (textResponse.includes("aes.js") || textResponse.includes("<html>") || textResponse.includes("<script")) {
-      console.error("❌ InfinityFree bloque la requête:", textResponse.substring(0, 200));
-      return NextResponse.json(
-        { success: false, error: "Le serveur bloque la requête. Vérifiez la configuration." },
-        { status: 500 }
-      );
+      console.error("❌ InfinityFree bloque toujours la requête après retries");
+      // Essayer de parser quand même si c'est juste un warning
+      if (textResponse.length < 5000) {
+        console.log("⚠️ Tentative de continuer malgré le blocage...");
+      } else {
+        return NextResponse.json(
+          { success: false, error: "Le serveur bloque la requête. Réessayez dans quelques instants." },
+          { status: 500 }
+        );
+      }
     }
 
     let data;
