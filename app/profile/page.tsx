@@ -30,6 +30,17 @@ export default function ProfilePage() {
         credentials: "include",
       });
 
+      // 401 est normal si pas connecté
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        router.push("/login");
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {

@@ -41,6 +41,18 @@ export default function AdminSettingsPage() {
       const meRes = await fetch("/api/auth/me", {
         credentials: "include",
       });
+
+      // 401 est normal si pas connecté
+      if (meRes.status === 401) {
+        router.push("/");
+        return;
+      }
+
+      if (!meRes.ok) {
+        router.push("/");
+        return;
+      }
+
       const meData = await meRes.json();
 
       if (!meData.success || meData.user.role !== "admin") {

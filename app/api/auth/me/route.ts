@@ -9,8 +9,6 @@ export async function GET(request: NextRequest) {
     // Récupérer les cookies de la requête Next.js
     const cookies = request.headers.get("cookie");
     
-    console.log("🍪 Cookies reçus de Next.js:", cookies);
-
     // Appel au backend PHP avec les cookies
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -24,23 +22,24 @@ export async function GET(request: NextRequest) {
       headers: headers,
     });
 
-    console.log("📥 Statut /me:", response.status);
-
     const textResponse = await response.text();
-    console.log("📥 Réponse /me:", textResponse);
 
     let data;
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
-      console.error("❌ Erreur parsing /me:", textResponse);
+      // Si le parsing échoue, retourner une réponse 200 avec success: false
+      // pour éviter l'erreur 401 dans la console
       return NextResponse.json(
         { success: false, error: "Non connecté" },
-        { status: 401 }
+        { status: 200 }
       );
     }
 
-    return NextResponse.json(data);
+    // Toujours retourner 200, même si le backend PHP retourne 401
+    // Cela évite l'erreur 401 dans la console du navigateur
+    // Le frontend vérifiera data.success pour savoir si l'utilisateur est connecté
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("❌ Erreur /me:", error);
     return NextResponse.json(

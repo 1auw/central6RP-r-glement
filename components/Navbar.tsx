@@ -103,13 +103,23 @@ export default function Navbar() {
         const res = await fetch('/api/auth/me', {
           credentials: 'include',
         });
+        
+        // 401 est normal si pas connecté, ne pas afficher d'erreur
+        if (res.status === 401) {
+          return; // Utilisateur non connecté, c'est normal
+        }
+        
+        if (!res.ok) {
+          return; // Autre erreur, ignorer silencieusement
+        }
+        
         const data = await res.json();
         if (data.success && data.user) {
           setIsLoggedIn(true);
           setUsername(data.user.username);
         }
       } catch (error) {
-        // User not logged in
+        // User not logged in - ignorer silencieusement
       }
     };
     checkAuth();
