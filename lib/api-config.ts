@@ -5,7 +5,7 @@
 
 // URL de l'API PHP backend
 // En développement : http://localhost/central6/api
-// En production : https://central6rp.rf.gd/api
+// En production : https://central6rp.rf.gd
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://central6rp.rf.gd';
 
 // URL du site

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
-import { getApiUrl } from "@/lib/api-config";
+// Plus besoin d'importer getApiUrl, on utilise /api/auth/login directement
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,11 +22,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const apiUrl = getApiUrl("auth/login.php");
-      console.log("🔗 URL appelée:", apiUrl);
-      
-      // Appel direct au backend PHP depuis le navigateur pour éviter la protection InfinityFree
-      const res = await fetch(apiUrl, {
+      // Appel à l'API Route Next.js (pas de CORS nécessaire)
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

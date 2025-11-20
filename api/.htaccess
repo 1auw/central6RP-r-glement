@@ -1,61 +1,27 @@
 # ================================
-# SÉCURITÉ RENFORCÉE - CENTRAL 6RP
+# .htaccess pour Central6RP - 000webhost
+# Version optimisée pour 000webhost
 # ================================
 
-RewriteEngine On
+# Activer le moteur de réécriture
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+</IfModule>
 
-# ================================
-# PROTECTION PHP
-# ================================
-
-# Désactiver l'affichage des erreurs PHP
-php_flag display_errors Off
-php_flag display_startup_errors Off
-
-# Protection contre les injections
-php_flag magic_quotes_gpc Off
-php_flag register_globals Off
-
-# Limiter la taille des uploads
-php_value upload_max_filesize 2M
-php_value post_max_size 2M
-
-# Limiter le temps d'exécution
-php_value max_execution_time 30
-
-# Sessions sécurisées
-php_flag session.auto_start Off
-php_value session.cookie_httponly 1
-php_value session.use_only_cookies 1
-
-# ================================
-# BLOCAGE FICHIERS SENSIBLES
-# ================================
-
-# Bloquer l'accès aux fichiers JSON, logs, SQL, et config
-<FilesMatch "\.(json|log|sql|bak|config|ini|md)$">
-    <IfModule mod_authz_core.c>
-        Require all denied
-    </IfModule>
-    <IfModule !mod_authz_core.c>
-        Order allow,deny
-        Deny from all
-    </IfModule>
-</FilesMatch>
-
-# Autoriser uniquement README.md
-<Files "README.md">
+# Autoriser l'accès aux fichiers PHP
+<FilesMatch "\.php$">
     <IfModule mod_authz_core.c>
         Require all granted
     </IfModule>
     <IfModule !mod_authz_core.c>
-        Order deny,allow
+        Order allow,deny
         Allow from all
     </IfModule>
-</Files>
+</FilesMatch>
 
-# Bloquer l'accès aux fichiers de backup
-<FilesMatch "(^\.|\~|\.bak|\.old|\.tmp|\.swp)$">
+# Bloquer les fichiers sensibles
+<FilesMatch "\.(log|sql|bak|md|json|ini|env)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -65,81 +31,45 @@ php_value session.use_only_cookies 1
     </IfModule>
 </FilesMatch>
 
-# ================================
-# HEADERS DE SÉCURITÉ
-# ================================
+# Bloquer l'accès aux fichiers de configuration
+<FilesMatch "(^\.htaccess|^\.htpasswd|^config\.php|^database\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
 
-# Protection XSS
-Header set X-XSS-Protection "1; mode=block"
+# CORS - Géré par PHP dans config.php
+# Les headers CORS sont définis dans config.php pour plus de contrôle
 
-# Empêcher l'embedding dans une iframe
-Header set X-Frame-Options "DENY"
-
-# Empêcher le MIME sniffing
-Header set X-Content-Type-Options "nosniff"
-
-# Référrer Policy
-Header set Referrer-Policy "strict-origin-when-cross-origin"
-
-# Masquer la version PHP
-Header unset X-Powered-By
-Header unset Server
-
-# Content Security Policy (adapté pour le développement)
-Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:3001;"
-
-# ================================
-# CORS (géré dynamiquement dans config.php)
-# ================================
-
-# Le CORS est géré dans config.php pour plus de flexibilité
-# Cela permet d'autoriser localhost (dev) et Vercel (prod) automatiquement
-
-# CORS Preflight
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
-
-# ================================
-# PROTECTION CONTRE LES ATTAQUES
-# ================================
-
-# Bloquer les requêtes avec SQL injection patterns
-RewriteCond %{QUERY_STRING} ([';]|(alter|create|drop|insert|delete|update|truncate|replace)[\s]+) [NC,OR]
-RewriteCond %{QUERY_STRING} (union[\s]+select|concat[\s]*\(|script[\s]*\>|<iframe) [NC,OR]
-RewriteCond %{QUERY_STRING} (\.\.\/|\.\.\\|\/etc\/|\/proc\/) [NC]
-RewriteRule .* - [F,L]
-
-# Bloquer les user agents suspects
-RewriteCond %{HTTP_USER_AGENT} (libwww|wget|python|nikto|scan|java|winhttp|clshttp|loader|curl) [NC,OR]
-RewriteCond %{HTTP_USER_AGENT} (;|<|>|'|%0A|%0D|%27|%3C|%3E|%00) [NC,OR]
-RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
-RewriteCond %{HTTP_USER_AGENT} ^(-|)$
-RewriteRule .* - [F,L]
-
-# Bloquer les méthodes HTTP non autorisées
-RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|PUT|DELETE) [NC]
-RewriteRule .* - [F,L]
-
-# Bloquer l'accès aux répertoires sensibles
-RewriteRule ^(\.git|\.htaccess|\.htpasswd) - [F,L]
-
-# ================================
-# PROTECTION BRUTE FORCE
-# ================================
-
-# Limiter le nombre de requêtes par seconde (si mod_ratelimit disponible)
-<IfModule mod_ratelimit.c>
-    SetOutputFilter RATE_LIMIT
-    SetEnv rate-limit 400
+# Headers de sécurité
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# ================================
-# CACHE CONTROL
-# ================================
+# Désactiver l'affichage des erreurs PHP en production
+php_flag display_errors Off
+php_flag display_startup_errors Off
+php_value error_reporting 0
 
-# Désactiver le cache pour les fichiers API
-<FilesMatch "\.(php)$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
-    Header set Pragma "no-cache"
-    Header set Expires 0
-</FilesMatch>
+# Compression GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache des fichiers statiques
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>

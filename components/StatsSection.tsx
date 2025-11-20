@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Users, Shield, Zap, ShoppingBag } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getApiUrl } from '@/lib/api-config';
+// Plus besoin d'importer getApiUrl, on utilise /api/stats directement
 
 export default function StatsSection() {
   const [stats, setStats] = useState({
@@ -15,10 +15,10 @@ export default function StatsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Récupérer les stats depuis l'API PHP
+    // Récupérer les stats depuis l'API Next.js (pas de CORS nécessaire)
     const fetchStats = async () => {
       try {
-        const response = await fetch(getApiUrl('stats.php'), {
+        const response = await fetch('/api/stats', {
           credentials: 'include',
         });
         const data = await response.json();

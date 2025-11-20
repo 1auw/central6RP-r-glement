@@ -3,20 +3,32 @@
  * Central6RP - Configuration de la base de données
  */
 
+// ============================================
+// CORS SIMPLIFIÉ (optionnel - les requêtes viennent de Next.js côté serveur)
+// ============================================
+// Répondre aux requêtes OPTIONS si nécessaire
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+// ============================================
+
 // Démarrer la session de manière sécurisée
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_secure', 0); // Désactivé en développement (activer en production avec HTTPS)
-    ini_set('session.cookie_samesite', 'Lax'); // Lax pour permettre les requêtes cross-origin en développement
+    // Activer cookie_secure en production (HTTPS requis)
+    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 1 : 0);
+    ini_set('session.cookie_samesite', 'Lax');
     session_start();
 }
 
 // Configuration de la base de données InfinityFree
 // ⚠️ IMPORTANT : Remplissez les valeurs ci-dessous avec vos informations InfinityFree
+// Hostname MySQL sur InfinityFree : généralement 'sqlXXX.infinityfree.com'
 define('DB_HOST', 'sql213.infinityfree.com');  // Hostname MySQL (visible dans le panneau InfinityFree)
-define('DB_NAME', 'if0_40451098_central6rp');  // Nom complet de votre BDD (préfixe + nom que vous avez choisi)
-define('DB_USER', 'if0_40451098');              // Username MySQL (visible dans le panneau InfinityFree)
+define('DB_NAME', 'if0_40451098_central6rp');  // Nom complet de votre BDD (préfixe + nom)
+define('DB_USER', 'if0_40451098');  // Username MySQL (visible dans le panneau InfinityFree)
 define('DB_PASS', 'raGnjNeov1');  // Mot de passe MySQL
 define('DB_CHARSET', 'utf8mb4');
 
@@ -37,43 +49,10 @@ try {
         ]
     );
 } catch (PDOException $e) {
+    // En cas d'erreur de connexion, envoyer les headers CORS avant l'erreur
     http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
     die(json_encode(['success' => false, 'error' => 'Erreur de connexion à la base de données']));
-}
-
-// Configuration CORS - DOIT ÊTRE AVANT TOUT AUTRE HEADER
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-// Autoriser localhost (développement)
-if (preg_match('/^https?:\/\/localhost(:\d+)?$/', $origin)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
-// Autoriser votre domaine InfinityFree
-elseif (preg_match('/^https?:\/\/central6rp\.rf\.gd$/', $origin)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
-// Autoriser toutes les URLs Vercel (production)
-elseif (preg_match('/^https:\/\/.*\.vercel\.app$/', $origin)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
-// Autoriser toutes les origines si aucune ne correspond (pour le débogage)
-elseif (!empty($origin)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
-// Par défaut, autoriser localhost en développement
-else {
-    header('Access-Control-Allow-Origin: http://localhost:3001');
-}
-
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, Cookie');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Max-Age: 86400'); // Cache preflight pendant 24h
-
-// Répondre aux requêtes OPTIONS (preflight) IMMÉDIATEMENT
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
 }
 
 // Headers JSON (seulement pour les autres requêtes)

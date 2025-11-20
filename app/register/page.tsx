@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
-import { getApiUrl } from "@/lib/api-config";
+// Plus besoin d'importer getApiUrl, on utilise /api/auth/register directement
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,11 +36,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const apiUrl = getApiUrl("auth/register.php");
-      console.log("🔗 URL appelée:", apiUrl);
-      
-      // Appel direct au backend PHP depuis le navigateur pour éviter la protection InfinityFree
-      const res = await fetch(apiUrl, {
+      // Appel à l'API Route Next.js (pas de CORS nécessaire)
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -70,12 +67,10 @@ export default function RegisterPage() {
         console.error("❌ Erreur parsing JSON:", e);
         console.error("❌ Réponse complète:", textResponse);
         
-        if (textResponse.includes("aes.js") || textResponse.includes("location.href")) {
-          setError("Le serveur bloque la requête. Vérifiez la configuration CORS sur InfinityFree.");
-        } else if (textResponse.includes("404")) {
-          setError("Fichier non trouvé. Vérifiez que les fichiers PHP sont bien uploadés sur InfinityFree.");
+        if (textResponse.includes("404")) {
+          setError("Fichier non trouvé. Vérifiez que les fichiers PHP sont bien uploadés.");
         } else if (textResponse.includes("403")) {
-          setError("Accès refusé. Vérifiez les permissions des fichiers sur InfinityFree.");
+          setError("Accès refusé. Vérifiez les permissions des fichiers.");
         } else {
           setError(`Erreur serveur: ${textResponse.substring(0, 200)}`);
         }

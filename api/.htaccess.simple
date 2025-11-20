@@ -36,39 +36,12 @@
     </IfModule>
 </FilesMatch>
 
-# CORS - Autoriser les requêtes depuis votre site et Vercel
+# CORS n'est plus nécessaire (les requêtes viennent de Next.js côté serveur)
+# On garde juste les headers de sécurité
 <IfModule mod_headers.c>
-    # Autoriser depuis localhost (développement)
-    SetEnvIf Origin "^http(s)?://localhost(:[0-9]+)?$" CORS=1
-    # Autoriser depuis votre domaine InfinityFree
-    SetEnvIf Origin "^https?://central6rp\.rf\.gd$" CORS=1
-    # Autoriser toutes les URLs Vercel (production)
-    SetEnvIf Origin "^https://.*\.vercel\.app$" CORS=1
-    
-    Header set Access-Control-Allow-Origin "%{CORS}e" env=CORS
-    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization, Cookie"
-    Header set Access-Control-Allow-Credentials "true"
-    
-    # Headers de sécurité
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "DENY"
     Header set X-XSS-Protection "1; mode=block"
-</IfModule>
-
-# CORS Preflight (répondre aux requêtes OPTIONS)
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{REQUEST_METHOD} OPTIONS
-    RewriteRule ^(.*)$ - [R=200,L]
-</IfModule>
-
-# Alternative : gérer OPTIONS directement avec mod_headers
-<IfModule mod_headers.c>
-    # Répondre aux requêtes OPTIONS avec les bons headers
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, Cookie"
-    Header always set Access-Control-Allow-Credentials "true"
 </IfModule>
 
 # Désactiver l'affichage des erreurs PHP en production
